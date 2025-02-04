@@ -43,5 +43,8 @@ aladin:
   apiKey: "ttbrkddmsrud271916001"  # ???? API ?
   baseUrl: "https://www.aladin.co.kr/ttb/api"
 
-
+jwt:
+  header: Authorization
+  secret: "ga8iVpqa2hhfGm3e4uNXjbZhVgRzQD4T"
+  token-validity-in-seconds: 86400
 
