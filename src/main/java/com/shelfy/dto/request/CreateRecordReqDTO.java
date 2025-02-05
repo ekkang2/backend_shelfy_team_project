@@ -24,7 +24,6 @@ public class CreateRecordReqDTO {
     public String bookId;
     public int userId;
     public int stateType;
-    public Enum recordStateType;
 
     // cate 통합
     public LocalDate startDate;
