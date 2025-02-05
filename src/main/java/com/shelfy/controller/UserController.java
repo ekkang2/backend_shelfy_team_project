@@ -1,5 +1,6 @@
 package com.shelfy.controller;
 
+import com.shelfy.dto.ResponseDTO;
 import com.shelfy.dto.UserDTO;
 import com.shelfy.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,23 +19,22 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/join")
-    public ResponseEntity<?> join(@RequestBody UserDTO userDTO) {
+    public ResponseDTO<UserDTO> join(@RequestBody UserDTO userDTO) {
         log.info(userDTO.toString());
         try {
             userService.insertUser(userDTO);
-            userDTO.setSuccess(Boolean.TRUE);
-            return ResponseEntity.ok().body(userDTO);
+            return ResponseDTO.success(userDTO);
         }catch (Exception e) {
             log.error(e);
-            userDTO.setSuccess(Boolean.FALSE);
-            return ResponseEntity.badRequest().body(userDTO);
+            return ResponseDTO.fail("회원가입 중 서버 오류 발생");
         }
     }
 
-    @GetMapping("/")
-    public String home() {
-        return "Hello World";
+    @PostMapping("/login")
+    public ResponseDTO<UserDTO> login(@RequestBody UserDTO userDTO) {
+        log.info(userDTO.toString());
+        return ResponseDTO.success(userDTO);
     }
-
+    
 
 }

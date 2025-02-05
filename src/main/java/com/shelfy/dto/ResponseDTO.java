@@ -23,8 +23,8 @@ public class ResponseDTO<T> {
     }
 
     // 실패 응답을 위한 static 메서드
-    public static <T> ResponseDTO<T> fail(HttpStatus status, String errorMessage) {
-        return new ResponseDTO<>(false, null, status.value(), errorMessage);
+    public static <T> ResponseDTO<T> fail(String errorMessage) {
+        return new ResponseDTO<>(false, null, HttpStatus.BAD_REQUEST.value(), errorMessage);
     }
 
 

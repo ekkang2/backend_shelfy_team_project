@@ -26,5 +26,4 @@ public class UserDTO {
     private String userCreatedAt;
     private String userUpdatedAt;
     private String userDeletedAt;
-    private boolean success;
 }
