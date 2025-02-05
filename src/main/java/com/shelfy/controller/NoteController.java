@@ -3,9 +3,12 @@ package com.shelfy.controller;
 import com.shelfy.dto.NoteRequestDTO;
 import com.shelfy.dto.NoteResponseDTO;
 import com.shelfy.service.NoteService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
      날짜 : 2025/02/04
@@ -26,8 +29,11 @@ public class NoteController {
 
     // 노트 글 작성
     @PostMapping
-    public void createNote(@RequestBody NoteRequestDTO noteRequestDTO) {
+    public ResponseEntity<Map<String, Object>> createNote(@RequestBody NoteRequestDTO noteRequestDTO) {
         noteService.createNote(noteRequestDTO);
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Note saved successfully!");
+        return ResponseEntity.ok(response);
     }
 
     // 노트 글 목록 조회
