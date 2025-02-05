@@ -18,12 +18,16 @@ public interface BookRepository extends MongoRepository<BookDocument, String> {
 
 
     // 제목, 저자 또는 출판사로 책 검색 (LIKE와 유사)
-//    @Query("{ 'bookTitle': { '$regex': ?0, '$options': 'i' }  }")
-    //List<BookDocument> findAllByBookTitle(String query);
-    List<BookDocument> findByBookTitleContainingIgnoreCaseOrBookAuthorContainingIgnoreCaseOrBookPublisherContainingIgnoreCase(
-            String title, String author, String publisher);
+    @Query("{ '$or': [ " +
+            "{ 'bookTitle': { '$regex': ?0, '$options': 'i' } }, " +
+            "{ 'bookAuthor': { '$regex': ?0, '$options': 'i' } }, " +
+            "{ 'bookPublisher': { '$regex': ?0, '$options': 'i' } } " +
+            "] }")
+    List<BookDocument> searchBooksByQuery(String query);
 
 
+    // ISBN 목록을 받아 해당하는 책을 조회
+    List<BookDocument> findByBookIsbnIn(List<String> bookIsbns);
 
 
 }

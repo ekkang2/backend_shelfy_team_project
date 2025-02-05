@@ -23,7 +23,12 @@ public class AladinController {
 
     private final AladinService aladinService;
 
-    // 검색 api로 도서 조회
+    /**
+     *  검색 api로 도서 조회
+     * @param query
+     * @return List<BookDTO>
+     */
+
     @GetMapping("/search")
     public List<BookDTO> searchBooks(@RequestParam String query) {
 

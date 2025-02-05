@@ -14,8 +14,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.awt.print.Book;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /*
@@ -39,62 +42,88 @@ public class BookService {
      * @param query
      * @return List<BookDTO>
      */
+    // 1. db에서 검색
+    // 2. 검색 결과가 없으면 알라딘 api 호출
+    // 3. isbn 검증 후 중복 확인
+    // 4. 새로운 책만 저장 후 반환
     public List<BookDTO> searchBooks(String query) {
-
-        // hashmap
-        // api 요청하기전에 query로 조회한 데이터가 내 db에 해당 값이 존재하는지 확인해서 있으면 그냥 반환하고 없으면 api요청 보내야함 ****
-        // 먼저 내 db에서 title, author, publisher로 책 검색
-        List<BookDocument> foundBooks = bookRepository.findByBookTitleContainingIgnoreCaseOrBookAuthorContainingIgnoreCaseOrBookPublisherContainingIgnoreCase(query, query, query);
+        // 1. 먼저 내 DB에서 책 검색
+        List<BookDocument> foundBooks = bookRepository.searchBooksByQuery(query);
         log.info("foundBooks : " + foundBooks);
 
-        // 결과 있으면 반환
+        // DB에서 검색 결과가 있으면 DTO 변환 후 결과 반환
         if (!foundBooks.isEmpty()) {
-            return foundBooks.stream().map(this::convertToDTO).collect(Collectors.toList());
-        } else {
-            // 책이 존재하지 않으면 API 요청
-            // 알라딘 검색 api 호출
-            List<BookDTO> bookDTOList = aladinService.searchByAladin(query);
-            log.info("알라딘 검색 응답받은 bookDTOList : " + bookDTOList);
-
-            // book 테이블에 insert (간혹 isbn이 비어있는 책이 존재해서 isbn이 없는 책은 필터링해서 저장 안 시킴)
-            if (bookDTOList != null && !bookDTOList.isEmpty()) {
-                List<BookDocument> bookDocuments = bookDTOList.stream()
-                        .map(BookDTO::toDocument)
-                        .filter(bookDocument -> bookDocument.getBookIsbn() != null && !bookDocument.getBookIsbn().isEmpty())
-                        .toList();
-
-                log.info("필터링된 bookDocuments : " + bookDocuments);
-                 
-                if (!bookDocuments.isEmpty()) {
-                    try {
-                        // saveAll 메서드를 통해 모든 문서를 저장
-                        // stream map
-                        List<BookDocument> savedDocuments = bookRepository.saveAll(bookDocuments);
-                        log.info("저장된 도서 수 : " + savedDocuments.size());
-
-                        // 저장된 ID를 BookDTO에 설정
-                        for (int i = 0; i < savedDocuments.size(); i++) {
-                            bookDTOList.get(i).setBookId(savedDocuments.get(i).getBookId());
-                        }
-
-                        return bookDTOList;
-
-                    } catch (Exception e) {
-                        log.error("저장 중 오류 발생: " + e.getMessage());
-                    }
-                } else {
-                    // API 요청 결과가 null인 경우 빈 리스트 반환
-                    return Collections.emptyList();
-                }
-            } else {
-                return Collections.emptyList();
-            }
-
-            return bookDTOList;
+            return foundBooks.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
         }
 
-    }
+        // 2. 검색 결과 없으면 알라딘 API 요청
+        List<BookDTO> bookDTOList = aladinService.searchByAladin(query);
+        log.info("알라딘 검색 응답받은 bookDTOList : " + bookDTOList);
 
+        // API에서도 책을 찾지 못하면 빈 리스트 반환
+        if (bookDTOList == null || bookDTOList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 3. ISBN이 없는 책 필터링
+        List<BookDTO> validBooks = bookDTOList.stream()
+                .filter(dto -> dto.getBookIsbn() != null && !dto.getBookIsbn().trim().isEmpty())
+                .toList();
+
+        // ISBN이 있는 책이 하나도 없으면 빈 리스트 반환
+        if (validBooks.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 4. DB에 존재하는 ISBN 조회하여 중복 제거
+        // 검색한 책 리스트의 isbn 문자열을 가져옴
+        List<String> isbnList = validBooks.stream()
+                .map(BookDTO::getBookIsbn)
+                .toList();
+        log.info("검색한 책 리스트의 isbn : " + isbnList);
+
+        // 검색한 책의 isbn와 기존에 있는 isbn이랑 중복되는 책 조회
+        List<BookDocument> existingBooks = bookRepository.findByBookIsbnIn(isbnList);
+        log.info("중복되는 책 : " + existingBooks);
+
+        // 조회한 결과를 Set으로 변환하여 중복을 제거
+        Set<String> existingIsbnSet = existingBooks.stream()
+                .map(BookDocument::getBookIsbn)
+                .collect(Collectors.toSet());
+
+        // 5. 기존에 없는 책만 저장 대상으로 선정
+        List<BookDocument> newBooks = validBooks.stream()
+                .map(BookDTO::toDocument)
+                .filter(book -> !existingIsbnSet.contains(book.getBookIsbn()))
+                .toList();
+
+        log.info("저장할 책 목록 : " + newBooks);
+
+        // 저장할 책이 없으면 기존 validBooks 반환
+        if (newBooks.isEmpty()) {
+            return validBooks;
+        }
+
+        try {
+            // 6. 새로운 책만 저장
+            List<BookDocument> savedDocuments = bookRepository.saveAll(newBooks);
+            log.info("저장된 도서 수 : " + savedDocuments.size());
+            log.info("저장된 책들 : " + savedDocuments);
+
+            // 7. 저장된 bookId를 BookDTO에 설정
+            for (int i = 0; i < savedDocuments.size(); i++) {
+                validBooks.get(i).setBookId(savedDocuments.get(i).getBookId());
+            }
+
+            return validBooks;
+
+        } catch (Exception e) {
+            log.error("저장 중 오류 발생: " + e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
 
 
 
