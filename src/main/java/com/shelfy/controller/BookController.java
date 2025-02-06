@@ -40,16 +40,15 @@ public class BookController {
     public ResponseDTO<List<BookDTO>> searchBooks(@RequestParam String query) {
         log.info("책 검색 query : " + query);
 
-        List<BookDTO> bookDTOList = bookService.searchBooks(query);
-        log.info("책 검색 반환 bookDTOList : " + bookDTOList);
-
-        // 검색 결과가 없으면 204 No Content 반환
-        if (bookDTOList.isEmpty()) {
-            return new ResponseDTO<>(true, bookDTOList, HttpStatus.NO_CONTENT.value(), null);
+        try {
+            List<BookDTO> bookDTOList = bookService.searchBooks(query);
+            log.info("책 검색 반환 bookDTOList : " + bookDTOList);
+            return ResponseDTO.success(bookDTOList);
+        }catch (Exception e) {
+            log.error(e);
+            return ResponseDTO.fail("책 검색 중 서버 오류 발생");
         }
 
-        // 검색 성공 (200 OK)
-        return ResponseDTO.success(bookDTOList);
     }
 
     // 2차 검색 (ISBN으로 페이지 수 가져오기) - 책 검색 후 상세페이지
