@@ -6,12 +6,7 @@ import com.shelfy.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -26,7 +21,7 @@ public class UserController {
         try {
             String status = userService.insertUser(userDTO);
             return ResponseDTO.success(null);
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error(e);
             return ResponseDTO.fail("회원가입 중 서버 오류 발생");
         }
@@ -59,11 +54,35 @@ public class UserController {
             // 클라이언트에 토큰을 반환
             return ResponseDTO.success(responseUser);
 
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error(e);
-            return ResponseDTO.fail("로그인 실패");
+            return ResponseDTO.fail("로그인에 실패하였습니다.");
         }
     }
-    
+
+    // 회원가입 시 아이디 중복 검사
+    @GetMapping("/validate/userUid")
+    public ResponseDTO<Object> validateUserUid(@RequestParam(value = "userUid") String userUid) {
+
+        boolean isDuplicated = userService.isUserUidDuplicated(userUid);
+        return isDuplicated ? ResponseDTO.fail("아이디가 이미 사용 중입니다.") : ResponseDTO.success(null);
+
+    }
+
+    // 회원가입 시 이메일 중복 검사
+    @GetMapping("/validate/userEmail")
+    public ResponseDTO<Object> validateUserEmail(@RequestParam(value = "userEmail") String userEmail) {
+        boolean isDuplicated = userService.isUserEmailDuplicated(userEmail);
+        return isDuplicated ? ResponseDTO.fail("이메일이 이미 사용 중입니다.") : ResponseDTO.success(null);
+    }
+
+    // 회원가입 시 닉네임 중복 검사
+    @GetMapping("/validate/userNick")
+    public ResponseDTO<Object> validateUserNick(@RequestParam(value = "userNick") String userNick) {
+        boolean isDuplicated = userService.isUserNickDuplicated(userNick);
+        return isDuplicated ? ResponseDTO.fail("닉네임이 이미 사용 중입니다.") : ResponseDTO.success(null);
+
+    }
+
 
 }

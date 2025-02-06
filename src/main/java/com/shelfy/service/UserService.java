@@ -47,6 +47,7 @@ public class UserService {
                     .userNick(userDTO.getUserNick())
                     .userEmail(userDTO.getUserEmail())
                     .userPwd(encodedPwd)
+                    .userProfile(userDTO.getUserProfile())
                     .build();
 
             userMapper.insert(user);
@@ -91,5 +92,30 @@ public class UserService {
     public UserDTO getUserByUid(String uid) {
         return userMapper.selectUser(uid);
     }
+
+
+    /**
+     * 아이디 중복 검사
+     * @param userUid
+     * @return
+     */
+    public boolean isUserUidDuplicated(String userUid){
+        String user_uid = userMapper.selectUserUid(userUid);
+        return user_uid.equals(userUid);
+    }
+
+
+    public boolean isUserEmailDuplicated(String userEmail){
+        String user_email = userMapper.selectUserEmail(userEmail);
+        return user_email.equals(userEmail);
+    }
+
+
+    public boolean isUserNickDuplicated(String userNick){
+        String user_nick = userMapper.selectUserNick(userNick);
+        return user_nick.equals(userNick);
+    }
+
+
 
 }
