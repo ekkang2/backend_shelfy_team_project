@@ -1,9 +1,11 @@
 package com.shelfy.controller;
 
+import com.shelfy.dto.ResponseDTO;
 import com.shelfy.dto.request.CreateRecordReqDTO;
 import com.shelfy.service.RecordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,10 +36,10 @@ public class RecordController {
     public ResponseEntity createRecord(@RequestBody CreateRecordReqDTO dto) {
         try {
             log.info("createRecord 컨트롤러 "+dto.toString());
-            ResponseEntity result = recordService.insertRecord(dto);
-            return result;
+            ResponseDTO result = recordService.createRecordState(dto);
+            return ResponseEntity.ok(result);
         }catch (Exception e) {
-            return ResponseEntity.ok(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
         }
     }
 }
