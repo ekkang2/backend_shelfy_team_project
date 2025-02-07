@@ -1,5 +1,6 @@
 package com.shelfy.service;
 
+import com.shelfy.dto.RecordDTO;
 import com.shelfy.dto.RecordStateDTO;
 import com.shelfy.dto.ResponseDTO;
 import com.shelfy.dto.request.CreateRecordReqDTO;
@@ -29,105 +30,123 @@ public class RecordService {
      * 1. bookid, userid -> state 테이블 기록이 있는지?
      * 2-1. 데이터가 없으면 record insert
      * 2-2. 데이터가 있으면
-     *      stateType이 reqData.stateType과 일치?
-     *      2-2-1. throw "이미 동일한 상태의 기록이 있습니다." -> 이후 덮어쓰시겠습니까? 또다른 api요청으로 연계
-     *      2-2-2. reqData.stateType에 따라 각 테이블에 동일한 stateId를 가진 데이터가 있는지?
-     *              2-2-2-1.
-     *
-     *
-     * 1. bookId, userId가 동일한 recordState 기록이 있는지 조회
-     * 2-1. 있다면 -> req의 타입(카테고리)과 조회한 recordState의 타입이 일치하면 throw
-     * 2-2. 있다면 -> 타입이 일치하지 않으면
-     *          각 record 테이블에 같은 recordStateId를 가진 데이터가 있는지 조회
-     *          2-2-1. 있으면 -> 해당 데이터 업데이트?
-     *          2-2-2. 없으면 -> 새로운 데이터 insert
+     * stateType이 reqData.stateType과 일치?
+     * 2-2-1. throw "이미 동일한 상태의 기록이 있습니다." -> 이후 덮어쓰시겠습니까? 또다른 api요청으로 연계
+     * 2-2-2. reqData.stateType에 따라 각 테이블에 동일한 stateId를 가진 데이터가 있는지?
+     * 2-2-2-1. throw "이미 동일한 상태의 기록이 있습니다." -> 이후 덮어쓰시겠습니까? 또다른 api요청으로 연계
+     * 2-2-2-2. 새로운 record insert
      *
      * @param reqDTO - 독서기록 데이터
      * @return responseDTO
      */
     public ResponseDTO createRecordState(CreateRecordReqDTO reqDTO) {
-        RecordStateDTO recordState = recordMapper.selectByBookId(reqDTO);
+        RecordStateDTO recordState = recordMapper.selectStateByBookIdAndUserId(reqDTO);
         log.info("createRecordState 서비스 bookid 동일한 데이터 조회 " + recordState);
-        int result = 0;//이거 여기 맞나?
+        int recordSuccess = 0;
 
         if (recordState != null) {
-            if (recordState.rStateType != reqDTO.stateType) {
-                // 레코드 테이블에 stateid가 동일한 컬럼이 있는지 조회?
-//                if(stateid가 동일한 컬럼이 있다?){
-//                    // 그 record를 update
-//                }else{
-//                    // 새로운 record를 insert
-//                }
+            log.info("데이터 있음" + recordState);
 
-                // 레코드 테이블에 update
+            if (recordState.rStateType != reqDTO.stateType) {
                 reqDTO.setStateId(recordState.rStateId);
-                result = createRecord(reqDTO);
+                RecordDTO recordData = findRecordByState(reqDTO); // 각 record 테이블에 같은 stateId를 가진 데이터가 있는지 조회
+                log.info("각 record 테이블에 같은 stateId를 가진 데이터가 있는지 조회 " + recordData);
+
+                if(recordData != null) {
+                    log.info("active는 아닌데 같은 stateId를 가진 기록이 존재함");
+                    return ResponseDTO.builder()
+                            .success(false)
+                            .status(200)
+                            .response(recordData)
+                            .errorMessage("이전 기록이 존재합니다.")
+                            .build();
+//                    throw new IllegalStateException("이전 기록이 존재합니다."); // 데이터를 덮어쓰시겠습니까?
+                } else {
+                    log.info("동일 stateId를 가진 기록이 없어서 record 생성");
+                    recordState.setRStateType(reqDTO.stateType);
+                    recordMapper.updateRecordStateType(recordState);
+                    recordSuccess = createRecord(reqDTO);
+                    return ResponseDTO.success(recordSuccess);
+                }
+
             } else {
-                throw new IllegalStateException("이미 동일한 상태의 기록이 존재합니다.");
+                log.info("동일한 상태의 기록이 존재합니다.");
+                throw new IllegalStateException("동일한 상태의 기록이 존재합니다.");
             }
         } else {
-            recordMapper.insertRecordState(reqDTO);
-            // record 테이블에 insert
-            result = createRecord(reqDTO);
-        }
+            log.info("비어 있음" + recordState);
+            recordMapper.insertRecordState(reqDTO); // 새로운 state 생성
 
-
-
-        if (result > 0) {
-            return ResponseDTO.success(reqDTO);
-        } else {
-            return ResponseDTO.fail("기록 추가에 실패했습니다.");
+            log.info("새로 입력한 데이터 : "+reqDTO);
+            recordSuccess = createRecord(reqDTO); // 새로운 record 생성
+            return ResponseDTO.success(recordSuccess);
         }
     }
 
-    public int createRecord(CreateRecordReqDTO dto) {
+    /**
+     * 250207 박연화
+     * 각 타입별 테이블에 같은 stateId를 가진 record가 있는지 조회하는 메서드
+     * @param reqDTO
+     * @return RecordDTO
+     */
+    private RecordDTO findRecordByState(CreateRecordReqDTO reqDTO) {
 
-        int result = 0;
-        switch (dto.stateType) {
+        RecordDTO recordData;
+        switch (reqDTO.stateType) {
             case 1:
-                result = recordMapper.insertDone(dto);
+                recordData = recordMapper.selectDoneByStateId(reqDTO);
+                log.info("findRecordByState 1 done" + recordData);
                 break;
             case 2:
-                result = recordMapper.insertDoing(dto);
+                recordData = recordMapper.selectDoingByStateId(reqDTO);
+                log.info("findRecordByState 2 doing" + recordData);
                 break;
             case 3:
-                result = recordMapper.insertWish(dto);
+                recordData = recordMapper.selectWishByStateId(reqDTO);
+                log.info("findRecordByState 3 wish" + recordData);
                 break;
             case 4:
-                result = recordMapper.insertStop(dto);
+                recordData = recordMapper.selectStopByStateId(reqDTO);
+                log.info("findRecordByState 4 stop" + recordData);
                 break;
             default:
                 throw new IllegalArgumentException("잘못된 독서기록 타입입니다.");
         }
-        log.info("createRecord 서비스 " + result);
+        log.info("findRecordByState 서비스 - 조회 데이터 : " + recordData + " 타입: " + reqDTO.stateType);
+        return recordData;
+    }
+
+    /**
+     * 250206 박연화
+     * 각 타입별 테이블에 새로운 레코드 생성
+     * @param reqDTO
+     * @return 레코드 생성 성공여부 (int)
+     */
+    public int createRecord(CreateRecordReqDTO reqDTO) {
+
+        int result = 0;
+        reqDTO.setActive(1);
+
+        switch (reqDTO.stateType) {
+            case 1:
+                result = recordMapper.insertDone(reqDTO);
+                break;
+            case 2:
+                result = recordMapper.insertDoing(reqDTO);
+                break;
+            case 3:
+                result = recordMapper.insertWish(reqDTO);
+                break;
+            case 4:
+                result = recordMapper.insertStop(reqDTO);
+                break;
+            default:
+                throw new IllegalArgumentException("잘못된 독서기록 타입입니다.");
+        }
+        log.info("createRecord 서비스 - 레코드 생성 성공여부 : " + result);
 
         return result;
     }
-
-//
-//    public int updateRecord(CreateRecordReqDTO recordReqDTO) {
-//
-//        int result = 0;
-//        switch (recordReqDTO.stateType) {
-//            case 1:
-//                result = recordMapper.insertDone(recordReqDTO);
-//                break;
-//            case 2:
-//                result = recordMapper.insertDoing(recordReqDTO);
-//                break;
-//            case 3:
-//                result = recordMapper.insertWish(recordReqDTO);
-//                break;
-//            case 4:
-//                result = recordMapper.insertStop(recordReqDTO);
-//                break;
-//            default:
-//                throw new IllegalArgumentException("잘못된 독서기록 타입입니다.");
-//        }
-//        log.info("updateRecord 서비스 " + result);
-//
-//        return result;
-//    }
 
 
 }

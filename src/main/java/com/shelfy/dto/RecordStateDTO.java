@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 /*
     날 짜 : 2025/02/06(목)
     담당자 : 박연화
-    내 용 : Book state 정보를 전달하기 위한 DTO
+    내 용 : record state 정보를 전달하기 위한 DTO
 */
 @Data
 @Builder
