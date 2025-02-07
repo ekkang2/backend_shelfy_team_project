@@ -49,7 +49,12 @@ public class BookController {
 
     }
 
-    // 도서 상세보기 조회
+
+    /**
+     * 도서 상세보기 조회
+     * @param bookIsbn
+     * @return
+     */
     @GetMapping("/detail/{bookIsbn}")
     public ResponseDTO<BookDTO> detailBook(@PathVariable String bookIsbn) {
 
