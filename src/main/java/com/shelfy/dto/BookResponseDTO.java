@@ -7,7 +7,7 @@ import java.util.List;
 /*
      날짜 : 2025/01/30
      이름 : 강은경
-     내용 : 알라딘 API 응답을 위한 BookResponseDTO 생성
+     내용 : 알라딘 API 반환을 위한 BookResponseDTO 생성
 
 */
 @Data

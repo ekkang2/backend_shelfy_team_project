@@ -8,11 +8,9 @@ import com.shelfy.service.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.awt.print.Book;
 import java.util.List;
 
 /*
@@ -51,16 +49,22 @@ public class BookController {
 
     }
 
-    // 2차 검색 (ISBN으로 페이지 수 가져오기) - 책 검색 후 상세페이지
-//    @GetMapping("/detail")
-//    public BookDTO getBookDetail(@RequestParam String bookIsbn) {
-//        log.info(bookIsbn);
-//        return aladinService.getBookDetail(bookIsbn);
-//    }
+    // 도서 상세보기 조회
+    @GetMapping("/detail/{bookIsbn}")
+    public ResponseDTO<BookDTO> detailBook(@PathVariable String bookIsbn) {
 
+        log.info("상세보기 할 책의 isbn : " + bookIsbn);
 
+        try {
+            BookDTO bookDTO = bookService.selectBookPageAndUpdate(bookIsbn);
+            log.info("책 상세보기 반환 bookDTO : " + bookDTO);
+            return ResponseDTO.success(bookDTO);
 
+        }catch (Exception e) {
+            log.error(e);
+            return ResponseDTO.fail("상세보기 조회 중 서버 오류 발생");
+        }
 
-
+    }
 
 }

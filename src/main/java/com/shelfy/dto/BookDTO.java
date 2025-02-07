@@ -59,6 +59,7 @@ public class BookDTO {
         }
     }
 
+    // 알라딘 상세보기 api 요청시 필요
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class BookInfo {

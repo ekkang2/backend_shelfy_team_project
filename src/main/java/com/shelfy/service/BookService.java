@@ -125,7 +125,36 @@ public class BookService {
         }
     }
 
+    /**
+     * 책 상세보기 진입시 페이지 수 save
+     * @param bookIsbn
+     * @return BookDTO
+     */
+    public BookDTO selectBookPageAndUpdate(String bookIsbn) {
 
+        log.info("service로 넘겨받은 isbn : " + bookIsbn);
+        // isbn에 해당하는 내 db 책 데이터 조회
+        BookDocument bookDocument = bookRepository.findBookPageByBookIsbn(bookIsbn);
+        log.info("페이지수 여부 확인을 위한 내 bookDocument :" + bookDocument);
+
+        // 페이지 값이 0이면 알라딘 API에서 페이지 수 담은 데이터 가져오기
+        if (bookDocument.getBookPage() == 0) {
+            // 알라딘 API에서 도서 정보 조회
+            BookDTO bookDTO = aladinService.selectBookDetailByAladin(bookIsbn);
+            log.info("페이지 수 담은 bookDTO :" + bookDTO);
+
+            // 알라딘에서 받아온 책 페이지 데이터가 있을 경우
+            if (bookDTO != null && bookDTO.getBookPage() > 0) {
+                bookDocument.setBookPage(bookDTO.getBookPage());
+                bookRepository.save(bookDocument);
+                log.info("bookPage 업데이트: " + bookDTO.getBookPage());
+                return bookDTO;
+            }
+        }
+
+        // bookDocument → bookDTO 변환
+        return convertToDTO(bookDocument);
+    }
 
 
     // bookDocument > bookDTO로 변환

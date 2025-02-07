@@ -25,9 +25,11 @@ public interface BookRepository extends MongoRepository<BookDocument, String> {
             "] }")
     List<BookDocument> searchBooksByQuery(String query);
 
-
     // ISBN 목록을 받아 해당하는 책을 조회
     List<BookDocument> findByBookIsbnIn(List<String> bookIsbns);
+
+    // isbn으로 책 조회
+    BookDocument findBookPageByBookIsbn(String isbn);
 
 
 }
