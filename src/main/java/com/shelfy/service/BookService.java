@@ -146,6 +146,7 @@ public class BookService {
             // 알라딘에서 받아온 책 페이지 데이터가 있을 경우
             if (bookDTO != null && bookDTO.getBookPage() > 0) {
                 bookDocument.setBookPage(bookDTO.getBookPage());
+                bookDTO.setBookId(bookDocument.getBookId());
                 bookRepository.save(bookDocument);
                 log.info("bookPage 업데이트: " + bookDTO.getBookPage());
                 return bookDTO;
