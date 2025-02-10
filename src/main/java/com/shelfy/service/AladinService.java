@@ -60,7 +60,9 @@ public class AladinService {
 
             // 응답 후처리 및 JSON 파싱
             // 마지막 `;` 때문에 json 파싱 오류 발생 > 제거
-            response = response.replaceAll(";$", "").replace("'", "\"");
+            response = response.replaceAll(";$", "")
+                    .replace("'", "\"")
+                    .replaceAll("[\\t\\n\\r]", " "); // 제어 문자 제거
             BookResponseDTO bookResponse = objectMapper.readValue(response, BookResponseDTO.class);
             log.info("bookResponse : " + bookResponse);
 
@@ -101,7 +103,9 @@ public class AladinService {
             }
 
             // API 응답의 마지막 `;` 제거
-            jsonResponse = jsonResponse.replaceAll(";$", "").replace("'", "\"");
+            jsonResponse = jsonResponse.replaceAll(";$", "")
+                    .replace("'", "\"")
+                    .replaceAll("[\\t\\n\\r]", " "); // 제어 문자 제거
 
             // JSON을 DTO로 변환
             ObjectMapper objectMapper = new ObjectMapper();
