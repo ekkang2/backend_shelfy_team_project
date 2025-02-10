@@ -44,6 +44,7 @@ public class UserController {
 
             // 응답 body 에 담아 보내줄 회원 정보 설계
             UserDTO responseUser = UserDTO.builder()
+                    .userId(user.getUserId())
                     .userUid(user.getUserUid())
                     .userNick(user.getUserNick())
                     .userEmail(user.getUserEmail())
