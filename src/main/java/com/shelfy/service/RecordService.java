@@ -1,14 +1,17 @@
 package com.shelfy.service;
 
-import com.shelfy.dto.RecordDTO;
+import com.shelfy.dto.RecordDataDTO;
 import com.shelfy.dto.RecordStateDTO;
 import com.shelfy.dto.ResponseDTO;
-import com.shelfy.dto.request.CreateRecordReqDTO;
+import com.shelfy.dto.request.RecordDTO;
 import com.shelfy.mapper.RecordMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
      날짜 : 2025/02/04
@@ -39,7 +42,7 @@ public class RecordService {
      * @param reqDTO - 독서기록 데이터
      * @return responseDTO
      */
-    public ResponseDTO createRecordState(CreateRecordReqDTO reqDTO) {
+    public ResponseDTO createRecordState(RecordDTO reqDTO) {
         RecordStateDTO recordState = recordMapper.selectStateByBookIdAndUserId(reqDTO);
         log.info("createRecordState 서비스 bookid 동일한 데이터 조회 " + recordState);
         int recordSuccess = 0;
@@ -49,7 +52,7 @@ public class RecordService {
 
             if (recordState.rStateType != reqDTO.stateType) {
                 reqDTO.setStateId(recordState.rStateId);
-                RecordDTO recordData = findRecordByState(reqDTO); // 각 record 테이블에 같은 stateId를 가진 데이터가 있는지 조회
+                RecordDataDTO recordData = findRecordByState(reqDTO); // 각 record 테이블에 같은 stateId를 가진 데이터가 있는지 조회
                 log.info("각 record 테이블에 같은 stateId를 가진 데이터가 있는지 조회 " + recordData);
 
                 if(recordData != null) {
@@ -89,9 +92,9 @@ public class RecordService {
      * @param reqDTO
      * @return RecordDTO
      */
-    private RecordDTO findRecordByState(CreateRecordReqDTO reqDTO) {
+    private RecordDataDTO findRecordByState(RecordDTO reqDTO) {
 
-        RecordDTO recordData;
+        RecordDataDTO recordData;
         switch (reqDTO.stateType) {
             case 1:
                 recordData = recordMapper.selectDoneByStateId(reqDTO);
@@ -122,7 +125,7 @@ public class RecordService {
      * @param reqDTO
      * @return 레코드 생성 성공여부 (int)
      */
-    public int createRecord(CreateRecordReqDTO reqDTO) {
+    public int createRecord(RecordDTO reqDTO) {
 
         int result = 0;
         reqDTO.setActive(1);
@@ -148,5 +151,28 @@ public class RecordService {
         return result;
     }
 
+    /**
+     * 250210 박연화
+     * @param userId
+     * @return responseDTO - stateList
+     */
+    public ResponseDTO readRecords(int userId, int type) {
 
+        List<RecordDTO> recordList = new ArrayList<>();
+        switch (type) {
+            case 1:
+                recordList = recordMapper.selectDoneByUserId(userId);
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            default:
+                throw new IllegalArgumentException("잘못된 독서기록 타입입니다.");
+        }
+
+        return null;
+    }
 }

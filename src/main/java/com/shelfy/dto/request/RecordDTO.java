@@ -20,7 +20,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true) // 알 수 없는 JSON 필드 자동 무시
-public class CreateRecordReqDTO {
+public class RecordDTO {
 
     @JsonProperty("stateId")
     public int stateId;

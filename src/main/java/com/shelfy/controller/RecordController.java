@@ -1,7 +1,7 @@
 package com.shelfy.controller;
 
 import com.shelfy.dto.ResponseDTO;
-import com.shelfy.dto.request.CreateRecordReqDTO;
+import com.shelfy.dto.request.RecordDTO;
 import com.shelfy.service.RecordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -33,10 +33,27 @@ public class RecordController {
         4. 데이터 추가가 성공적으로 완료되면 성공 상태 반환
      */
     @PostMapping("/record")
-    public ResponseEntity createRecord(@RequestBody CreateRecordReqDTO dto) {
+    public ResponseEntity createRecord(@RequestBody RecordDTO dto) {
         try {
             log.info("createRecord 컨트롤러 "+dto.toString());
             ResponseDTO result = recordService.createRecordState(dto);
+            return ResponseEntity.ok(result);
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
+        }
+    }
+
+    /**
+     * 250210 박연화
+     * 1.
+     * @param type
+     * @return
+     */
+    @GetMapping("/records/{type}")
+    public ResponseEntity readRecords(@PathVariable int type) {
+        try {
+            int userId = 1;
+            ResponseDTO result = recordService.readRecords(userId, type);
             return ResponseEntity.ok(result);
         }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
