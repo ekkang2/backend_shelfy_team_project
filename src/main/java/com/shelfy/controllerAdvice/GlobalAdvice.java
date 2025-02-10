@@ -1,17 +1,18 @@
 package com.shelfy.controllerAdvice;
 
-import com.shelfy.controller.NoteController;
 import com.shelfy.dto.ResponseDTO;
 import com.shelfy.exception.NoteNotFoundException;
-import com.shelfy.service.NoteService;
-import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+/*
+     날짜 : 2025/02/09
+     이름 : 박경림
+     내용 : 전역 예외 처리를 위한 RestControllerAdvice 추가
+*/
 // basePackages 는 해당 패키지 내부에서만 예외 감지?, 기본값은 전역
 //@RestControllerAdvice(basePackages = "com.shelfy.controller")
 @RestControllerAdvice

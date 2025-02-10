@@ -51,7 +51,6 @@ public interface NoteMapper {
             "   <if test='noteContents != null'>note_contents = #{noteContents},</if> " +
             "   <if test='noteImage != null'>note_image = #{noteImage},</if> " +
             "   <if test='noteRStateId != null'>note_r_state_id = #{noteRStateId},</if> " +
-            "   <if test='notePin != null'>note_pin = #{notePin},</if> " +
             "   <if test='noteCategory != null'>note_category = #{noteCategory},</if> " +
             "   note_updated_at = CURRENT_TIMESTAMP " +  // 항상 업데이트 시간은 수정
             "</set> " +
