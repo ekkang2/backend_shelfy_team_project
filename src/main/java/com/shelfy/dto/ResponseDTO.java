@@ -29,7 +29,7 @@ public class ResponseDTO<T> {
         return new ResponseDTO<>(false, null, HttpStatus.BAD_REQUEST.value(), errorMessage);
     }
 
-
-
-
+    public static <T> ResponseDTO<T> fail(String errorMessage, HttpStatus status) {
+        return new ResponseDTO<>(false, null, status.value(), errorMessage);
+    }
 }

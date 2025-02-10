@@ -2,6 +2,7 @@ package com.shelfy.service;
 
 import com.shelfy.dto.NoteRequestDTO;
 import com.shelfy.dto.NoteResponseDTO;
+import com.shelfy.exception.NoteNotFoundException;
 import com.shelfy.mapper.NoteMapper;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,12 @@ public class NoteService {
 
     // 노트 글 삭제 (Delete)
     public void deleteNote(int noteId) {
+        NoteResponseDTO foundNote = noteMapper.getNoteById(noteId);
+
+        if (foundNote == null)
+        {
+            throw new NoteNotFoundException();
+        }
         noteMapper.deleteNote(noteId);
     }
 

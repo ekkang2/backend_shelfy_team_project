@@ -28,9 +28,13 @@ public class NoteController {
         this.noteService = noteService;
     }
 
+    // dto 분리
+
     // 노트 글 작성
+    // 노트 생성 dto
     @PostMapping
     public ResponseEntity<Integer> createNote(@RequestBody NoteRequestDTO noteRequestDTO) {
+        // 토큰을 받아서 디코딩해서 사용자 id로 검증하는데 검증은 서비스 함수에서!!
         int noteId = noteService.createNote(noteRequestDTO);  // 서비스에서 반환된 ID 받기
         return ResponseEntity.ok(noteId);  // 프론트에 ID 반환
     }
@@ -59,6 +63,7 @@ public class NoteController {
     // 노트 글 삭제 (Delete)
     @DeleteMapping("/{noteId}")
     public ResponseEntity<ResponseDTO<Void>> deleteNote(@PathVariable int noteId) {
+
         noteService.deleteNote(noteId);
         return ResponseEntity.ok(ResponseDTO.success(null));  // 삭제 성공 시 null 반환
     }
