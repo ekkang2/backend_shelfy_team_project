@@ -40,4 +40,10 @@ public class RecordDTO {
     public double rating;
     public int active;
 
+
+    public String bookImage;
+    public String bookTitle;
+    public String bookAuthor;
+    public String bookPublisher;
+
 }

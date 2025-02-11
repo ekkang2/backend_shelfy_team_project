@@ -35,6 +35,8 @@ public class RecordController {
     @PostMapping("/record")
     public ResponseEntity createRecord(@RequestBody RecordDTO dto) {
         try {
+            // TODO - userid 삭제
+            dto.setUserId(10);
             log.info("createRecord 컨트롤러 "+dto.toString());
             ResponseDTO result = recordService.createRecordState(dto);
             return ResponseEntity.ok(result);
@@ -46,14 +48,17 @@ public class RecordController {
     /**
      * 250210 박연화
      * 1.
-     * @param type
-     * @return
+     * @param type, page
+     * @return 페이징 처리한 타입별 레코드
      */
-    @GetMapping("/records/{type}")
-    public ResponseEntity readRecords(@PathVariable int type) {
+    @GetMapping("/records/{type}/{page}")
+    public ResponseEntity readRecords(@PathVariable int type,
+                                      @PathVariable int page) {
         try {
-            int userId = 1;
-            ResponseDTO result = recordService.readRecords(userId, type);
+            //TODO - 유저아이디 박아놓은 거 나중에 지워야 함
+            int userId = 10;
+            int size = 10;
+            ResponseDTO result = recordService.readRecords(userId, type, page, size);
             return ResponseEntity.ok(result);
         }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
