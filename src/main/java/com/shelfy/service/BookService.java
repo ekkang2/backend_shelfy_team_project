@@ -47,6 +47,9 @@ public class BookService {
     // 3. isbn 검증 후 중복 확인
     // 4. 새로운 책만 저장 후 반환
     public List<BookDTO> searchBooks(String query) {
+
+
+        
         // 1. 먼저 내 DB에서 책 검색
         List<BookDocument> foundBooks = bookRepository.searchBooksByQuery(query);
         log.info("foundBooks : " + foundBooks);
@@ -156,6 +159,70 @@ public class BookService {
         // bookDocument → bookDTO 변환
         return convertToDTO(bookDocument);
     }
+
+    /**
+     * 검색결과 더보기 (알라딘 API 먼저 호출)
+     * @param query
+     * @return List<BookDTO>
+     */
+    public List<BookDTO> searchMoreBooks(String query) {
+        // 1. 무조건 알라딘 API 요청
+        List<BookDTO> bookDTOList = aladinService.searchByAladin(query);
+        log.info("알라딘 검색 응답받은 bookDTOList : " + bookDTOList);
+
+        // API에서도 책을 찾지 못하면 빈 리스트 반환
+        if (bookDTOList == null || bookDTOList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 2. ISBN이 없는 책 필터링
+        List<BookDTO> validBooks = bookDTOList.stream()
+                .filter(dto -> dto.getBookIsbn() != null && !dto.getBookIsbn().trim().isEmpty())
+                .toList();
+
+        if (validBooks.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 3. 기존 DB에 존재하는 책 제거
+        List<String> isbnList = validBooks.stream()
+                .map(BookDTO::getBookIsbn)
+                .toList();
+
+        List<BookDocument> existingBooks = bookRepository.findByBookIsbnIn(isbnList);
+        Set<String> existingIsbnSet = existingBooks.stream()
+                .map(BookDocument::getBookIsbn)
+                .collect(Collectors.toSet());
+
+        List<BookDocument> newBooks = validBooks.stream()
+                .map(BookDTO::toDocument)
+                .filter(book -> !existingIsbnSet.contains(book.getBookIsbn()))
+                .toList();
+
+        log.info("저장할 책 목록 : " + newBooks);
+
+        if (newBooks.isEmpty()) {
+            return validBooks;
+        }
+
+        try {
+            // 4. 새로운 책만 저장
+            List<BookDocument> savedDocuments = bookRepository.saveAll(newBooks);
+            log.info("저장된 도서 수 : " + savedDocuments.size());
+
+            // 저장된 bookId를 BookDTO에 설정
+            for (int i = 0; i < savedDocuments.size(); i++) {
+                validBooks.get(i).setBookId(savedDocuments.get(i).getBookId());
+            }
+
+            return validBooks;
+
+        } catch (Exception e) {
+            log.error("저장 중 오류 발생: " + e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
 
 
     // bookDocument > bookDTO로 변환

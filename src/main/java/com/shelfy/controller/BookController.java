@@ -72,4 +72,25 @@ public class BookController {
 
     }
 
+
+    /**
+     * 도서 검색 더보기
+     * @param query
+     * @return List<BookDTO>
+     */
+    @GetMapping("/search/more")
+    public ResponseDTO<List<BookDTO>> searchBooksMore(@RequestParam String query) {
+        log.info("책 검색 query : " + query);
+
+        try {
+            List<BookDTO> bookDTOList = bookService.searchMoreBooks(query);
+            log.info("더보기 책 검색 반환 bookDTOList : " + bookDTOList);
+            return ResponseDTO.success(bookDTOList);
+        }catch (Exception e) {
+            log.error(e);
+            return ResponseDTO.fail("책 더보기 검색 중 서버 오류 발생");
+        }
+
+    }
+
 }

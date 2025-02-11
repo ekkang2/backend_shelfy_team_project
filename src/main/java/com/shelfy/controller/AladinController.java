@@ -41,7 +41,11 @@ public class AladinController {
         return bookDTOS;
     }
 
-    // 책 상세 조회
+    /**
+     * 도서 상세보기
+     * @param bookIsbn
+     * @return BookDTO
+     */
     @GetMapping("/detail/{bookIsbn}")
     public BookDTO selectBookDetail(@PathVariable String bookIsbn) {
 
@@ -53,12 +57,4 @@ public class AladinController {
     }
 
 
-
-
-    // 📌 2차 검색 (ISBN으로 페이지 수 가져오기) - 책 검색 후 상세페이지
-//    @GetMapping("/detail")
-//    public BookDTO getBookDetail(@RequestParam String bookIsbn) {
-//        log.info(bookIsbn);
-//        return aladinService.getBookDetail(bookIsbn);
-//    }
 }
