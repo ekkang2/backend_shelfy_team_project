@@ -1,4 +1,4 @@
-package com.shelfy.dto;
+package com.shelfy.dto.record;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,39 +10,34 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 /*
-    날 짜 : 2025/02/07(금)
-    담당자 : 박연화
-    내 용 : record 정보를 전달하기 위한 DTO (하나로 통합해서 사용)
-*/
+    2025/02/04
+    박연화
+    CreateRecordReqDTO - 독서기록 추가 (done/doing/wish/stop 통합)
+ */
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true) // 알 수 없는 JSON 필드 자동 무시
-public class RecordDataDTO {
-
-
-    @JsonProperty("recordId")
-    public int recordId;
+public class RecordDTO {
 
     @JsonProperty("stateId")
     public int stateId;
+    @JsonProperty("bookId")
+    public String bookId;
+    @JsonProperty("userId")
+    public int userId;
+    @JsonProperty("stateType")
+    public int stateType;
 
-    @JsonProperty("startDate")
+    // cate 통합
+    public int recordId;
     public LocalDate startDate;
-
-    @JsonProperty("endDate")
     public LocalDate endDate;
-
-    @JsonProperty("comment")
     public String comment;
-
-    @JsonProperty("progress")
     public int progress;
-
-    @JsonProperty("rating")
     public double rating;
-
-    @JsonProperty("active")
     public int active;
+
 }

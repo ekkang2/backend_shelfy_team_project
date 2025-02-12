@@ -1,11 +1,12 @@
 package com.shelfy.service;
 
 import com.shelfy.document.BookDocument;
-import com.shelfy.dto.RecordDataDTO;
-import com.shelfy.dto.RecordStateDTO;
+import com.shelfy.dto.record.RecordDataDTO;
+import com.shelfy.dto.record.RecordStateDTO;
 import com.shelfy.dto.ResponseDTO;
 import com.shelfy.dto.ResponsePageDTO;
-import com.shelfy.dto.request.RecordDTO;
+import com.shelfy.dto.record.RecordDTO;
+import com.shelfy.dto.record.RecordRespDTO;
 import com.shelfy.mapper.RecordMapper;
 import com.shelfy.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -160,20 +160,25 @@ public class RecordService {
 
     /**
      * 250210 박연화
+     * 독서기록 리스트 출력을 위한 메서드
+     * 1. 타입별 독서기록 조회
+     * 2. 독서기록 리스트에서 bookId 값을 꺼내 몽고디비에서 book 데이터 조회
+     * 3. 페이징 처리
      *
      * @param userId, type, page, size
-     * @return responseDTO - responsePageDTO에 감싸진 stateRecord 데이터 리스트
+     * @return 페이징 처리한 독서기록 리스트
      */
     public ResponseDTO readRecords(int userId, int type, int page, int size) {
 
         int offset = page * size; // 몇 번째 데이터부터 가져올지 결정
 
-        List<RecordDTO> recordList = new ArrayList<>();
+        List<RecordRespDTO> recordList = new ArrayList<>();
 
         // 타입별 데이터 조회
         switch (type) {
             case 1:
                 recordList = recordMapper.selectDoneRecordsByUserId(userId, size, offset);
+                log.info("유저아이디 확인 : " + recordList.toString());
                 break;
             case 2:
                 recordList = recordMapper.selectDoingRecordsByUserId(userId, size, offset);
@@ -188,7 +193,7 @@ public class RecordService {
                 throw new IllegalArgumentException("잘못된 독서기록 타입입니다.");
         }
 
-        List<RecordDTO> recordBookList = matchBook(recordList);
+        List<RecordRespDTO> recordBookList = matchBook(recordList);
 
         // 페이징 처리를 위한 총 데이터 갯수 조회
         int totalRecords = recordMapper.countRecordsByUserIdAndType(userId, type);
@@ -197,7 +202,7 @@ public class RecordService {
         boolean isFirst = page == 0;
         boolean isLast = (page + 1) >= totalPages;
 
-        ResponsePageDTO<RecordDTO> pageList = new ResponsePageDTO<>(
+        ResponsePageDTO<RecordRespDTO> pageList = new ResponsePageDTO<>(
                 isFirst,
                 isLast,
                 page,
@@ -209,8 +214,14 @@ public class RecordService {
         return ResponseDTO.success(pageList);
     }
 
-    private List<RecordDTO> matchBook(List<RecordDTO> recordList) {
-        List<RecordDTO> bookRecordList = recordList.stream().map(record -> {
+    /**
+     * 250211 박연화
+     * 레코드 리스트에서 bookId를 가지고 몽고디비에 레코드 리스트와 매칭되는 책 데이터를 추가하여 리스트로 반환
+     * @param recordList
+     * @return book데이터 추가한 recordRespDTO 리스트
+     */
+    private List<RecordRespDTO> matchBook(List<RecordRespDTO> recordList) {
+        List<RecordRespDTO> bookRecordList = recordList.stream().map(record -> {
             Optional<BookDocument> optBook = bookRepository.findById(record.getBookId());
             if(optBook.isPresent()) {
                 BookDocument book = optBook.get();

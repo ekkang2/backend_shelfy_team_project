@@ -1,4 +1,4 @@
-package com.shelfy.dto.request;
+package com.shelfy.dto.record;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,7 +20,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true) // 알 수 없는 JSON 필드 자동 무시
-public class RecordDTO {
+public class RecordRespDTO {
 
     @JsonProperty("stateId")
     public int stateId;

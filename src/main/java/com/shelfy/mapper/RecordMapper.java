@@ -1,8 +1,9 @@
 package com.shelfy.mapper;
 
-import com.shelfy.dto.RecordDataDTO;
-import com.shelfy.dto.RecordStateDTO;
-import com.shelfy.dto.request.RecordDTO;
+import com.shelfy.dto.record.RecordDataDTO;
+import com.shelfy.dto.record.RecordStateDTO;
+import com.shelfy.dto.record.RecordDTO;
+import com.shelfy.dto.record.RecordRespDTO;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -71,17 +72,10 @@ public interface RecordMapper {
     int insertDone(RecordDTO dto);
 
     //250211 박연화 state/done 조인 , userid 조건 - select all + 페이징
-    @Select("SELECT " +
-            "   s.r_state_id, " +
-            "   s.r_state_type, " +
-            "   s.r_state_book_id, " +
-            "   d.r_done_id, " +
-            "   d.r_done_rating, " +
-            "   d.r_done_start_date, " +
-            "   d.r_done_end_date, " +
-            "   d.r_done_comment " +
+    @Select("SELECT * " +
             "FROM tb_r_state s " +
             "JOIN tb_r_done d ON s.r_state_id = d.r_done_state_id " +
+            "LEFT JOIN tb_my_book m ON s.r_state_book_id = m.my_book_id " +
             "WHERE s.r_state_user_id = #{userId} " +
             "AND s.r_state_type = 1 " +
             "LIMIT #{size} OFFSET #{offset}")
@@ -89,13 +83,18 @@ public interface RecordMapper {
             @Result(column = "r_state_id", property = "stateId"),
             @Result(column = "r_state_type", property = "stateType"),
             @Result(column = "r_state_book_id", property = "bookId"),
+            @Result(column = "r_state_user_id", property = "userId"),
             @Result(column = "r_done_id", property = "recordId"),
             @Result(column = "r_done_rating", property = "rating"),
             @Result(column = "r_done_start_date", property = "startDate"),
             @Result(column = "r_done_end_date", property = "endDate"),
-            @Result(column = "r_done_comment", property = "comment")
+            @Result(column = "r_done_comment", property = "comment"),
+            @Result(column = "my_book_image", property = "bookImage"),
+            @Result(column = "my_book_title", property = "bookTitle"),
+            @Result(column = "my_book_author", property = "bookAuthor"),
+            @Result(column = "my_book_publisher", property = "bookPublisher")
     })
-    List<RecordDTO> selectDoneRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
+    List<RecordRespDTO> selectDoneRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
 
     // tb_r_doing ---------------------------------------------------------------------------------
     // 250207 박연화 stateId 가 동일한 record 조회
@@ -121,15 +120,10 @@ public interface RecordMapper {
 
 
     //250211 박연화 state/doing 조인 , userid 조건 - select all + 페이징
-    @Select("SELECT " +
-            "   s.r_state_id, " +
-            "   s.r_state_type, " +
-            "   s.r_state_book_id, " +
-            "   d.r_doing_id, " +
-            "   d.r_doing_start_date, " +
-            "   d.r_doing_progress " +
+    @Select("SELECT * " +
             "FROM tb_r_state s " +
             "JOIN tb_r_doing d ON s.r_state_id = d.r_doing_state_id " +
+            "LEFT JOIN tb_my_book m ON s.r_state_book_id = m.my_book_id " +
             "WHERE s.r_state_user_id = #{userId} " +
             "AND s.r_state_type = 2 " +
             "LIMIT #{size} OFFSET #{offset}")
@@ -137,11 +131,16 @@ public interface RecordMapper {
             @Result(column = "r_state_id", property = "stateId"),
             @Result(column = "r_state_type", property = "stateType"),
             @Result(column = "r_state_book_id", property = "bookId"),
+            @Result(column = "r_state_user_id", property = "userId"),
             @Result(column = "r_doing_id", property = "recordId"),
             @Result(column = "r_doing_start_date", property = "startDate"),
-            @Result(column = "r_doing_progress", property = "progress")
+            @Result(column = "r_doing_progress", property = "progress"),
+            @Result(column = "my_book_image", property = "bookImage"),
+            @Result(column = "my_book_title", property = "bookTitle"),
+            @Result(column = "my_book_author", property = "bookAuthor"),
+            @Result(column = "my_book_publisher", property = "bookPublisher")
     })
-    List<RecordDTO> selectDoingRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
+    List<RecordRespDTO> selectDoingRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
 
 
     // tb_r_wish ---------------------------------------------------------------------------------
@@ -167,16 +166,10 @@ public interface RecordMapper {
 
 
     //250211 박연화 state/wish 조인 , userid 조건 - select all + 페이징
-    @Select("SELECT " +
-            "   s.r_state_id, " +
-            "   s.r_state_type, " +
-            "   s.r_state_book_id, " +
-            "   d.r_wish_id, " +
-            "   d.r_wish_rating, " +
-            "   d.r_wish_start_date, " +
-            "   d.r_wish_comment " +
+    @Select("SELECT * " +
             "FROM tb_r_state s " +
             "JOIN tb_r_wish d ON s.r_state_id = d.r_wish_state_id " +
+            "LEFT JOIN tb_my_book m ON s.r_state_book_id = m.my_book_id " +
             "WHERE s.r_state_user_id = #{userId} " +
             "AND s.r_state_type = 3 " +
             "LIMIT #{size} OFFSET #{offset}")
@@ -184,12 +177,17 @@ public interface RecordMapper {
             @Result(column = "r_state_id", property = "stateId"),
             @Result(column = "r_state_type", property = "stateType"),
             @Result(column = "r_state_book_id", property = "bookId"),
+            @Result(column = "r_state_user_id", property = "userId"),
             @Result(column = "r_wish_id", property = "recordId"),
             @Result(column = "r_wish_rating", property = "rating"),
             @Result(column = "r_wish_start_date", property = "startDate"),
-            @Result(column = "r_wish_comment", property = "comment")
+            @Result(column = "r_wish_comment", property = "comment"),
+            @Result(column = "my_book_image", property = "bookImage"),
+            @Result(column = "my_book_title", property = "bookTitle"),
+            @Result(column = "my_book_author", property = "bookAuthor"),
+            @Result(column = "my_book_publisher", property = "bookPublisher")
     })
-    List<RecordDTO> selectWishRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
+    List<RecordRespDTO> selectWishRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
 
 
     // tb_r_stop ---------------------------------------------------------------------------------
@@ -218,17 +216,10 @@ public interface RecordMapper {
 
 
     //250211 박연화 state/stop 조인 , userid 조건 - select all + 페이징
-    @Select("SELECT " +
-            "   s.r_state_id, " +
-            "   s.r_state_type, " +
-            "   s.r_state_book_id, " +
-            "   d.r_stop_id, " +
-            "   d.r_stop_rating, " +
-            "   d.r_stop_end_date, " +
-            "   d.r_stop_comment, " +
-            "   d.r_stop_progress " +
+    @Select("SELECT * " +
             "FROM tb_r_state s " +
             "JOIN tb_r_stop d ON s.r_state_id = d.r_stop_state_id " +
+            "LEFT JOIN tb_my_book m ON s.r_state_book_id = m.my_book_id " +
             "WHERE s.r_state_user_id = #{userId} " +
             "AND s.r_state_type = 4 " +
             "LIMIT #{size} OFFSET #{offset}")
@@ -236,12 +227,17 @@ public interface RecordMapper {
             @Result(column = "r_state_id", property = "stateId"),
             @Result(column = "r_state_type", property = "stateType"),
             @Result(column = "r_state_book_id", property = "bookId"),
+            @Result(column = "r_state_user_id", property = "userId"),
             @Result(column = "r_stop_id", property = "recordId"),
             @Result(column = "r_stop_rating", property = "rating"),
             @Result(column = "r_stop_end_date", property = "endDate"),
             @Result(column = "r_stop_comment", property = "comment"),
-            @Result(column = "r_stop_progress", property = "progress")
+            @Result(column = "r_stop_progress", property = "progress"),
+            @Result(column = "my_book_image", property = "bookImage"),
+            @Result(column = "my_book_title", property = "bookTitle"),
+            @Result(column = "my_book_author", property = "bookAuthor"),
+            @Result(column = "my_book_publisher", property = "bookPublisher")
     })
-    List<RecordDTO> selectStopRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
+    List<RecordRespDTO> selectStopRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
 
 }

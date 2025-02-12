@@ -1,7 +1,7 @@
 package com.shelfy.controller;
 
 import com.shelfy.dto.ResponseDTO;
-import com.shelfy.dto.request.RecordDTO;
+import com.shelfy.dto.record.RecordDTO;
 import com.shelfy.service.RecordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
