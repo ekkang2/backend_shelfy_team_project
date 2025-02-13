@@ -46,6 +46,50 @@ public interface RecordMapper {
     int countRecordsByUserIdAndType(@Param("userId") int userId, @Param("type") int type);
 
 
+    // 250213 박연화 유저별 모든 독서기록 조회
+    @Select("SELECT * " +
+            "FROM tb_r_state s " +
+            "LEFT JOIN tb_r_done a ON s.r_state_id = a.r_done_state_id " +
+            "LEFT JOIN tb_r_doing b ON s.r_state_id = b.r_doing_state_id " +
+            "LEFT JOIN tb_r_wish c ON s.r_state_id = c.r_wish_state_id " +
+            "LEFT JOIN tb_r_stop d ON s.r_state_id = d.r_stop_state_id " +
+            "LEFT JOIN tb_my_book m ON s.r_state_book_id = m.my_book_id " +
+            "WHERE s.r_state_user_id = #{userId} ")
+    @Results({
+            @Result(column = "r_state_id", property = "stateId"),
+            @Result(column = "r_state_type", property = "stateType"),
+            @Result(column = "r_state_book_id", property = "bookId"),
+            @Result(column = "r_state_user_id", property = "userId"),
+
+            @Result(column = "r_done_id", property = "recordId"),
+            @Result(column = "r_done_rating", property = "rating"),
+            @Result(column = "r_done_start_date", property = "startDate"),
+            @Result(column = "r_done_end_date", property = "endDate"),
+            @Result(column = "r_done_comment", property = "comment"),
+
+            @Result(column = "r_doing_id", property = "recordId"),
+            @Result(column = "r_doing_start_date", property = "startDate"),
+            @Result(column = "r_doing_progress", property = "progress"),
+
+            @Result(column = "r_wish_id", property = "recordId"),
+            @Result(column = "r_wish_rating", property = "rating"),
+            @Result(column = "r_wish_start_date", property = "startDate"),
+            @Result(column = "r_wish_comment", property = "comment"),
+
+            @Result(column = "r_stop_id", property = "recordId"),
+            @Result(column = "r_stop_rating", property = "rating"),
+            @Result(column = "r_stop_end_date", property = "endDate"),
+            @Result(column = "r_stop_comment", property = "comment"),
+            @Result(column = "r_stop_progress", property = "progress"),
+
+            @Result(column = "my_book_image", property = "bookImage"),
+            @Result(column = "my_book_page", property = "bookPage"),
+            @Result(column = "my_book_title", property = "bookTitle"),
+            @Result(column = "my_book_author", property = "bookAuthor"),
+            @Result(column = "my_book_publisher", property = "bookPublisher")
+    })
+    List<RecordRespDTO> selectStateByUserId(@Param("userId") int userId);
+
 
     // tb_r_done ---------------------------------------------------------------------------------
     // 250207 박연화 stateId 가 동일한 record 조회

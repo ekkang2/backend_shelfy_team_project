@@ -45,5 +45,6 @@ public class RecordRespDTO {
     public String bookTitle;
     public String bookAuthor;
     public String bookPublisher;
+    public int bookPage;
 
 }

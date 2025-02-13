@@ -168,7 +168,7 @@ public class RecordService {
      * @param userId, type, page, size
      * @return 페이징 처리한 독서기록 리스트
      */
-    public ResponseDTO readRecords(int userId, int type, int page, int size) {
+    public ResponseDTO readRecordsBytypeFor10(int userId, int type, int page, int size) {
 
         int offset = page * size; // 몇 번째 데이터부터 가져올지 결정
 
@@ -226,6 +226,7 @@ public class RecordService {
             if(optBook.isPresent()) {
                 BookDocument book = optBook.get();
                 record.setBookImage(book.getBookImage());
+                record.setBookPage(book.getBookPage());
                 record.setBookTitle(book.getBookTitle());
                 record.setBookAuthor(book.getBookAuthor());
                 record.setBookPublisher(book.getBookPublisher());
@@ -234,5 +235,17 @@ public class RecordService {
         }).toList();
 
         return bookRecordList;
+    }
+
+    /**
+     * 250213 박연화
+     * 유저별 독서기록 전체 조회
+     * @param userId
+     * @return
+     */
+    public ResponseDTO readRecords(int userId) {
+        List<RecordRespDTO> allRecords = recordMapper.selectStateByUserId(userId);
+        List<RecordRespDTO> bookAndRecords = matchBook(allRecords);
+        return ResponseDTO.success(bookAndRecords);
     }
 }
