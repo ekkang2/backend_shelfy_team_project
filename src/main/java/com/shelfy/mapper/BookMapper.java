@@ -1,10 +1,9 @@
 package com.shelfy.mapper;
 
 import com.shelfy.dto.BookDTO;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import com.shelfy.dto.request.MyBookDTO;
+import com.shelfy.dto.request.RecordDTO;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 /*
@@ -16,21 +15,17 @@ import java.util.List;
 @Mapper
 public interface BookMapper {
 
-    // 도서 데이터 저장 (중복 방지)
-    @Insert("INSERT INTO tb_book (book_image, book_title, book_desc, book_author, book_publisher, book_isbn, book_page, book_published_at) " +
-            "VALUES (#{bookImage}, #{bookTitle}, #{bookDesc}, #{bookAuthor}, #{bookPublisher}, #{bookIsbn}, #{bookPage}, #{bookPublishedAt}) " +
-            "ON DUPLICATE KEY UPDATE " +
-            "book_page = VALUES(book_page), book_desc = VALUES(book_desc)")
-    void insertBook(BookDTO book);
+    // 250212 강은경 mybook 테이블 insert
+    @Insert("INSERT INTO tb_my_book " +
+            "(my_book_image, my_book_title, my_book_desc, my_book_author, my_book_publisher, my_book_isbn, my_book_page, my_book_published_at) " +
+            "VALUES (#{myBookImage}, #{myBookTitle}, #{myBookDesc}, #{myBookAuthor}, #{myBookPublisher}, #{myBookIsbn}, #{myBookPage}, #{myBookPublishedAt} )")
+    @Options(useGeneratedKeys = true, keyProperty = "myBookId")
+    MyBookDTO insertMyBook(MyBookDTO myBookDTO);
 
-    // ISBN으로 도서 중복 확인
-    @Select("SELECT COUNT(*) FROM tb_book WHERE book_isbn = #{bookIsbn}")
-    int checkBookExists(String bookIsbn);
 
-    // 저장된 도서 목록 검색
-    @Select("SELECT * FROM tb_book WHERE book_title LIKE CONCAT('%', #{query}, '%')")
-    List<BookDTO> searchBooks(String query);
 
-    @Update("UPDATE tb_book SET book_page = #{bookPage} WHERE book_isbn = #{bookIsbn}")
-    void updateBookPages(BookDTO book);
+
+
+
+
 }

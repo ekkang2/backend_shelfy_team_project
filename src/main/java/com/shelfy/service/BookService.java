@@ -6,6 +6,7 @@ import com.shelfy.config.AladinProperties;
 import com.shelfy.document.BookDocument;
 import com.shelfy.dto.BookDTO;
 import com.shelfy.dto.BookResponseDTO;
+import com.shelfy.dto.request.MyBookDTO;
 import com.shelfy.mapper.BookMapper;
 import com.shelfy.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class BookService {
 
     private final AladinService aladinService;
     private final BookRepository bookRepository;
+    private final BookMapper bookMapper;
 
     /**
      * 책 검색 메서드
@@ -222,8 +224,6 @@ public class BookService {
             return Collections.emptyList();
         }
     }
-
-
 
     // bookDocument > bookDTO로 변환
     private BookDTO convertToDTO(BookDocument bookDocument) {
