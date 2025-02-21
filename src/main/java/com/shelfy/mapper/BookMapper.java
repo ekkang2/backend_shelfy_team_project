@@ -2,7 +2,6 @@ package com.shelfy.mapper;
 
 import com.shelfy.dto.BookDTO;
 import com.shelfy.dto.request.MyBookDTO;
-import com.shelfy.dto.request.RecordDTO;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
