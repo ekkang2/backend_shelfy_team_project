@@ -76,4 +76,15 @@ public class RecordController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
         }
     }
+
+    @GetMapping("record/{id}")
+    public ResponseEntity<?> readRecordDetail(@PathVariable int id) {
+        try {
+            ResponseDTO result = recordService.readRecordDetail(id);
+            return ResponseEntity.ok().body(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
+        }
+    }
+
 }

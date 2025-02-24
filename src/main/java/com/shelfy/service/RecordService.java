@@ -248,4 +248,14 @@ public class RecordService {
         List<RecordRespDTO> bookAndRecords = matchBook(allRecords);
         return ResponseDTO.success(bookAndRecords);
     }
+
+
+    /**
+     *
+     * @param recordId
+     * @return
+     */
+    public ResponseDTO readRecordDetail(int recordId) {
+        return null;
+    }
 }
