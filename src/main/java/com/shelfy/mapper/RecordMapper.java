@@ -86,7 +86,9 @@ public interface RecordMapper {
             @Result(column = "my_book_page", property = "bookPage"),
             @Result(column = "my_book_title", property = "bookTitle"),
             @Result(column = "my_book_author", property = "bookAuthor"),
-            @Result(column = "my_book_publisher", property = "bookPublisher")
+            @Result(column = "my_book_publisher", property = "bookPublisher"),
+            @Result(column = "my_book_desc", property = "bookDesc"),
+            @Result(column = "my_book_isbn", property = "bookIsbn")
     })
     List<RecordRespDTO> selectStateByUserId(@Param("userId") int userId);
 
@@ -284,4 +286,18 @@ public interface RecordMapper {
     })
     List<RecordRespDTO> selectStopRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
 
+    @Delete("DELETE FROM tb_r_done WHERE r_done_state_id = #{stateId}")
+    int deleteDone(int stateId);
+
+    @Delete("DELETE FROM tb_r_doing WHERE r_doing_state_id = #{stateId}")
+    int deleteDoing(int stateId);
+
+    @Delete("DELETE FROM tb_r_wish WHERE r_wish_state_id = #{stateId}")
+    int deleteWish(int stateId);
+
+    @Delete("DELETE FROM tb_r_stop WHERE r_stop_state_id = #{stateId}")
+    int deleteStop(int stateId);
+
+    @Delete("DELETE FROM tb_r_state WHERE r_state_id = #{stateId}")
+    int deleteState(int stateId);
 }

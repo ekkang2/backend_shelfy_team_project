@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /*
      날짜 : 2025/02/04
@@ -230,6 +231,9 @@ public class RecordService {
                 record.setBookTitle(book.getBookTitle());
                 record.setBookAuthor(book.getBookAuthor());
                 record.setBookPublisher(book.getBookPublisher());
+                record.setBookDesc(book.getBookDesc());
+                record.setBookIsbn(book.getBookIsbn());
+                record.isMyBook = false;
             }
             return record;
         }).toList();
@@ -242,20 +246,34 @@ public class RecordService {
      * 유저별 독서기록 전체 조회
      * @param userId
      * @return
+     * 1. 전체 독서기록 조회, 마이북과 연결되어있다면 마이북 데이터도 함께 조회
+     * 2. 마이북 데이터가 있으면, isMyBook true로 업데이트
+     * 3. 몽고디비에 있는 북 데이터 조회
      */
     public ResponseDTO readRecords(int userId) {
         List<RecordRespDTO> allRecords = recordMapper.selectStateByUserId(userId);
-        List<RecordRespDTO> bookAndRecords = matchBook(allRecords);
+        List<RecordRespDTO> updatedRecords = allRecords.stream()
+                .map(record -> {
+                    if (!record.getBookId().isEmpty()) {
+                        record.isMyBook = true;
+                    }
+                    return record;
+                })
+                .collect(Collectors.toList());
+        List<RecordRespDTO> bookAndRecords = matchBook(updatedRecords);
         return ResponseDTO.success(bookAndRecords);
     }
 
 
-    /**
-     *
-     * @param recordId
-     * @return
-     */
-    public ResponseDTO readRecordDetail(int recordId) {
-        return null;
+    @Transactional
+    public ResponseDTO deleteRecord(int stateId) {
+        int count = 0;
+        count += recordMapper.deleteDone(stateId);
+        count += recordMapper.deleteDoing(stateId);
+        count += recordMapper.deleteWish(stateId);
+        count += recordMapper.deleteStop(stateId);
+        count += recordMapper.deleteState(stateId);
+        log.info("deleteRecord 서비스 : " + count);
+        return ResponseDTO.success(count);
     }
 }

@@ -5,6 +5,7 @@ import com.shelfy.dto.record.RecordDTO;
 import com.shelfy.service.RecordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +48,6 @@ public class RecordController {
 
     /**
      * 250210 박연화
-     * 1.
      *
      * @param type, page
      * @return 페이징 처리한 타입별 레코드
@@ -77,12 +77,18 @@ public class RecordController {
         }
     }
 
-    @GetMapping("record/{id}")
-    public ResponseEntity<?> readRecordDetail(@PathVariable int id) {
+    /**
+     * 250324 박연화
+     * 기록 삭제
+     * @param stateId
+     * @return
+     */
+    @DeleteMapping("/record/{stateId}")
+    public ResponseEntity<?> deleteRecord(@PathVariable int stateId) {
         try {
-            ResponseDTO result = recordService.readRecordDetail(id);
+            ResponseDTO result = recordService.deleteRecord(stateId);
             return ResponseEntity.ok().body(result);
-        } catch (Exception e) {
+        }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
         }
     }

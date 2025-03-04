@@ -46,5 +46,9 @@ public class RecordRespDTO {
     public String bookAuthor;
     public String bookPublisher;
     public int bookPage;
+    public String bookDesc;
+    public String bookIsbn;
+
+    public boolean isMyBook;
 
 }
