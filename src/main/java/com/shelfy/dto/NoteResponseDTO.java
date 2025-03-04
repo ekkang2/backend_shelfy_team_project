@@ -13,10 +13,19 @@ public class NoteResponseDTO {
     private String noteImage;
     private boolean notePin;
     private String noteCategory;
+        private Integer noteRStateId;
     private LocalDateTime noteCreatedAt;
     private LocalDateTime noteUpdatedAt;
 
     // Getters & Setters
+    public Integer getNoteRStateId() {
+        return noteRStateId;
+    }
+
+    public void setNoteRStateId(Integer noteRStateId) {
+        this.noteRStateId = noteRStateId;
+    }
+
     public int getNoteId() {
         return noteId;
     }
