@@ -26,7 +26,7 @@ public interface NoteMapper {
     // 모든 노트 글 목록 조회 (Read - List)
     @Select("SELECT note_id AS noteId, note_title AS noteTitle, note_contents AS noteContents, " +
             "note_image AS noteImage, note_pin AS notePin, note_category AS noteCategory, " +
-            "note_created_at AS noteCreatedAt, note_updated_at AS noteUpdatedAt " +
+            "note_r_state_id AS noteRStateId, " + "note_created_at AS noteCreatedAt, note_updated_at AS noteUpdatedAt " +
             "FROM tb_note " +
             "WHERE note_user_id = #{noteUserId} " +  // 로그인한 유저의 노트 글만 조회
             "ORDER BY note_created_at DESC")
@@ -34,7 +34,7 @@ public interface NoteMapper {
 
     // 특정 노트 글 상세 조회 (Read - Detail)
     @Select("SELECT note_id AS noteId, note_title AS noteTitle, note_contents AS noteContents, " +
-            "note_image AS noteImage, note_pin AS notePin, note_category AS noteCategory, " +
+            "note_image AS noteImage, note_pin AS notePin, note_category AS noteCategory, " + "note_r_state_id AS noteRStateId, " +
             "note_created_at AS noteCreatedAt, note_updated_at AS noteUpdatedAt " +
             "FROM tb_note " +
             "WHERE note_id = #{noteId}")

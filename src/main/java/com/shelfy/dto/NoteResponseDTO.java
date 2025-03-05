@@ -13,7 +13,7 @@ public class NoteResponseDTO {
     private String noteImage;
     private boolean notePin;
     private String noteCategory;
-        private Integer noteRStateId;
+    private Integer noteRStateId;
     private LocalDateTime noteCreatedAt;
     private LocalDateTime noteUpdatedAt;
 
