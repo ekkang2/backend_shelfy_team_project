@@ -2,6 +2,7 @@ package com.shelfy.controller;
 
 import com.shelfy.dto.ResponseDTO;
 import com.shelfy.dto.record.RecordDTO;
+import com.shelfy.dto.record.UpdateRecordDTO;
 import com.shelfy.service.RecordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -88,6 +89,23 @@ public class RecordController {
         try {
             ResponseDTO result = recordService.deleteRecord(stateId);
             return ResponseEntity.ok().body(result);
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
+        }
+    }
+
+    /**
+     * 250305 박연화
+     * stateId, 업데이트할 데이터의 타입( 1: progress / 2: comment / 3: startDate, endDate / 4: rating )
+     * @param stateId
+     * @param type
+     * @return
+     */
+    @PutMapping("/record/{stateId}")
+    public ResponseEntity<?> updateRecord(@PathVariable int stateId,@RequestParam int type, @RequestBody UpdateRecordDTO dto) {
+        try {
+ResponseDTO response = recordService.updateRecordByType(stateId, type, dto);
+        return ResponseEntity.ok().body(response);
         }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
         }

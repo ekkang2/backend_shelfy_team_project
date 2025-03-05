@@ -1,12 +1,9 @@
 package com.shelfy.service;
 
 import com.shelfy.document.BookDocument;
-import com.shelfy.dto.record.RecordDataDTO;
-import com.shelfy.dto.record.RecordStateDTO;
+import com.shelfy.dto.record.*;
 import com.shelfy.dto.ResponseDTO;
 import com.shelfy.dto.ResponsePageDTO;
-import com.shelfy.dto.record.RecordDTO;
-import com.shelfy.dto.record.RecordRespDTO;
 import com.shelfy.mapper.RecordMapper;
 import com.shelfy.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
@@ -49,48 +46,60 @@ public class RecordService {
      * @return responseDTO
      */
     public ResponseDTO createRecordState(RecordDTO reqDTO) {
+        // 1. bookId, userId로 state 테이블 조회
         RecordStateDTO recordState = recordMapper.selectStateByBookIdAndUserId(reqDTO);
-        log.info("createRecordState 서비스 bookid 동일한 데이터 조회 " + recordState);
+        log.info("기존 record state 조회: " + recordState);
         int recordSuccess = 0;
 
+        // 2. 기존 recordState가 있는 경우
         if (recordState != null) {
-            log.info("데이터 있음" + recordState);
+            log.info("기존 recordState 존재");
 
-            if (recordState.rStateType != reqDTO.stateType) {
-                reqDTO.setStateId(recordState.rStateId);
-                RecordDataDTO recordData = findRecordByState(reqDTO); // 각 record 테이블에 같은 stateId를 가진 데이터가 있는지 조회
-                log.info("각 record 테이블에 같은 stateId를 가진 데이터가 있는지 조회 " + recordData);
-
-                if (recordData != null) {
-                    log.info("active는 아닌데 같은 stateId를 가진 기록이 존재함");
-                    return ResponseDTO.builder()
-                            .success(false)
-                            .status(200)
-                            .response(recordData)
-                            .errorMessage("이전 기록이 존재합니다.")
-                            .build();
-//                    throw new IllegalStateException("이전 기록이 존재합니다."); // 데이터를 덮어쓰시겠습니까?
-                } else {
-                    log.info("동일 stateId를 가진 기록이 없어서 record 생성");
-                    recordState.setRStateType(reqDTO.stateType);
-                    recordMapper.updateRecordStateType(recordState);
-                    recordSuccess = createRecord(reqDTO);
-                    return ResponseDTO.success(recordSuccess);
-                }
-
-            } else {
-                log.info("동일한 상태의 기록이 존재합니다.");
-                throw new IllegalStateException("동일한 상태의 기록이 존재합니다.");
+            // 2-1. 동일한 상태(stateType)인 경우 - 예외 처리
+            if (recordState.rStateType == reqDTO.stateType) {
+                log.warn("동일한 상태의 기록 존재");
+                throw new IllegalStateException("동일한 상태의 기록이 이미 존재합니다.");
             }
-        } else {
-            log.info("비어 있음" + recordState);
-            recordMapper.insertRecordState(reqDTO); // 새로운 state 생성
 
-            log.info("새로 입력한 데이터 : " + reqDTO);
-            recordSuccess = createRecord(reqDTO); // 새로운 record 생성
+            // 2-2. 다른 상태의 recordState인 경우
+            reqDTO.setStateId(recordState.rStateId);
+            RecordDataDTO existingRecord = findRecordByState(reqDTO);
+            log.info("다른 상태 record 확인: " + existingRecord);
+
+            if (existingRecord != null) {
+                // 동일한 stateId를 가진 record가 이미 존재하는 경우 -> 에러 처리
+                log.warn("다른 상태의 기록이 이미 존재합니다.");
+                return ResponseDTO.builder()
+                        .success(false)
+                        .status(200)
+                        .response(existingRecord)
+                        .errorMessage("이전 상태의 기록이 존재합니다.")
+                        .build();
+            }
+
+            // ✅ 2-3. 새로운 상태가 doing(2)일 경우, 기존 doing record 삭제
+            if (recordState.rStateType == 2) {
+                log.info("기존 doing record 삭제");
+                recordMapper.deleteDoing(reqDTO.stateId);
+            }
+
+            // 2-4. 상태 업데이트 후 새로운 record 생성
+            log.info("새로운 상태 반영 후 record 생성");
+            recordState.setRStateType(reqDTO.stateType);
+            recordMapper.updateRecordStateType(recordState);
+            recordSuccess = createRecord(reqDTO);
+
             return ResponseDTO.success(recordSuccess);
         }
+
+        // 3. recordState가 없는 경우 -> 새로운 state & record 생성
+        log.info("새로운 recordState 생성");
+        recordMapper.insertRecordState(reqDTO);
+        recordSuccess = createRecord(reqDTO);
+
+        return ResponseDTO.success(recordSuccess);
     }
+
 
     /**
      * 250207 박연화
@@ -218,13 +227,14 @@ public class RecordService {
     /**
      * 250211 박연화
      * 레코드 리스트에서 bookId를 가지고 몽고디비에 레코드 리스트와 매칭되는 책 데이터를 추가하여 리스트로 반환
+     *
      * @param recordList
      * @return book데이터 추가한 recordRespDTO 리스트
      */
     private List<RecordRespDTO> matchBook(List<RecordRespDTO> recordList) {
         List<RecordRespDTO> bookRecordList = recordList.stream().map(record -> {
             Optional<BookDocument> optBook = bookRepository.findById(record.getBookId());
-            if(optBook.isPresent()) {
+            if (optBook.isPresent()) {
                 BookDocument book = optBook.get();
                 record.setBookImage(book.getBookImage());
                 record.setBookPage(book.getBookPage());
@@ -244,9 +254,9 @@ public class RecordService {
     /**
      * 250213 박연화
      * 유저별 독서기록 전체 조회
+     *
      * @param userId
-     * @return
-     * 1. 전체 독서기록 조회, 마이북과 연결되어있다면 마이북 데이터도 함께 조회
+     * @return 1. 전체 독서기록 조회, 마이북과 연결되어있다면 마이북 데이터도 함께 조회
      * 2. 마이북 데이터가 있으면, isMyBook true로 업데이트
      * 3. 몽고디비에 있는 북 데이터 조회
      */
@@ -275,5 +285,23 @@ public class RecordService {
         count += recordMapper.deleteState(stateId);
         log.info("deleteRecord 서비스 : " + count);
         return ResponseDTO.success(count);
+    }
+
+    public ResponseDTO updateRecordByType(int stateId, int type, UpdateRecordDTO dto) {
+        switch (type) {
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            default:
+                break;
+        }
+        return null;
     }
 }
