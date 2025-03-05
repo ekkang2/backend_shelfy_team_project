@@ -275,6 +275,13 @@ public class RecordService {
     }
 
 
+    /**
+     * 2025.03.04 박연화
+     * state에 연결된 record 전체 삭제
+     *
+     * @param stateId
+     * @return
+     */
     @Transactional
     public ResponseDTO deleteRecord(int stateId) {
         int count = 0;
@@ -287,21 +294,120 @@ public class RecordService {
         return ResponseDTO.success(count);
     }
 
-    public ResponseDTO updateRecordByType(int stateId, int type, UpdateRecordDTO dto) {
-        switch (type) {
+    /**
+     * 25.03.05 박연화
+     * 레코드 타입별 데이터 업데이트 (done, doing, wish, stop)
+     *
+     * @param recordId
+     * @param recordType
+     * @param type
+     * @param dto
+     * @return
+     */
+    public ResponseDTO updateRecordByRecordType(int recordType, int recordId, int type, UpdateRecordDTO dto) {
+        int result = 0;
+        switch (recordType) {
             case 1:
+                result = updateDoneByAttributeType(recordId, type, dto);
                 break;
             case 2:
+                result = updateDoingByAttributeType(recordId, type, dto);
                 break;
             case 3:
+                result = updateWishByAttributeType(recordId, type, dto);
                 break;
             case 4:
-                break;
-            case 5:
+                result = updateStopByAttributeType(recordId, type, dto);
                 break;
             default:
-                break;
+                throw new IllegalArgumentException("잘못된 독서기록 타입입니다.");
         }
-        return null;
+        return ResponseDTO.success(result);
     }
+
+
+    // --- done 속성 업데이트 ---
+    public int updateDoneByAttributeType(int recordId, int attributeType, UpdateRecordDTO dto) {
+        int result = 0;
+        switch (attributeType) {
+            case 1:
+                throw new IllegalArgumentException("끝맺은 책 기록에는 페이지 항목이 없습니다.");
+            case 2:
+                recordMapper.updateDoneComment(recordId, dto.getComment());
+                break;
+            case 3:
+                recordMapper.updateDoneDate(recordId, dto.getStartDate(), dto.getEndDate());
+                break;
+            case 4:
+                recordMapper.updateDoneRating(recordId, dto.getRating());
+                break;
+            default:
+                throw new IllegalArgumentException("수정에 실패했습니다.");
+        }
+        return result;
+    }
+
+    // --- doing 속성 업데이트 ---
+    public int updateDoingByAttributeType(int recordId, int attributeType, UpdateRecordDTO dto) {
+        int result = 0;
+        switch (attributeType) {
+            case 1: // 진행 중인 책 -> 페이지(진행도) 업데이트
+                recordMapper.updateDoingProgress(recordId, dto.getProgress());
+                break;
+            case 2: // 코멘트 없음
+                throw new IllegalArgumentException("진행 중인 책 기록에는 코멘트 항목이 없습니다.");
+            case 3: // 시작 날짜 업데이트
+                recordMapper.updateDoingStartDate(recordId, dto.getStartDate());
+                break;
+            case 4: // 별점 없음
+                throw new IllegalArgumentException("진행 중인 책 기록에는 별점 항목이 없습니다.");
+            default:
+                throw new IllegalArgumentException("수정에 실패했습니다.");
+        }
+        return result;
+    }
+
+    // --- wish 속성 업데이트 ---
+    public int updateWishByAttributeType(int recordId, int attributeType, UpdateRecordDTO dto) {
+        int result = 0;
+        switch (attributeType) {
+            case 1: // 페이지 없음
+                throw new IllegalArgumentException("찜한 책 기록에는 페이지 항목이 없습니다.");
+            case 2: // 코멘트 업데이트
+                recordMapper.updateWishComment(recordId, dto.getComment());
+                break;
+            case 3: // 시작 날짜 업데이트
+                recordMapper.updateWishStartDate(recordId, dto.getStartDate());
+                break;
+            case 4: // 별점 업데이트
+                recordMapper.updateWishRating(recordId, dto.getRating());
+                break;
+            default:
+                throw new IllegalArgumentException("수정에 실패했습니다.");
+        }
+        return result;
+    }
+
+    // --- stop 속성 업데이트 ---
+    public int updateStopByAttributeType(int recordId, int attributeType, UpdateRecordDTO dto) {
+        int result = 0;
+        switch (attributeType) {
+            case 1: // 멈춘 페이지(진행도) 업데이트
+                recordMapper.updateStopProgress(recordId, dto.getProgress());
+                break;
+            case 2: // 코멘트 업데이트
+                recordMapper.updateStopComment(recordId, dto.getComment());
+                break;
+            case 3: // 시작/종료 날짜 업데이트
+                recordMapper.updateStopStartDate(recordId, dto.getStartDate(), dto.getEndDate());
+                break;
+            case 4: // 별점 업데이트
+                recordMapper.updateStopRating(recordId, dto.getRating());
+                break;
+            default:
+                throw new IllegalArgumentException("수정에 실패했습니다.");
+        }
+        return result;
+    }
+
 }

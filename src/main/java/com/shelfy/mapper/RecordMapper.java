@@ -6,6 +6,7 @@ import com.shelfy.dto.record.RecordDTO;
 import com.shelfy.dto.record.RecordRespDTO;
 import org.apache.ibatis.annotations.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /*
@@ -286,6 +287,8 @@ public interface RecordMapper {
     })
     List<RecordRespDTO> selectStopRecordsByUserId(@Param("userId") int userId, @Param("size") int size, @Param("offset") int offset);
 
+
+    // delete 
     @Delete("DELETE FROM tb_r_done WHERE r_done_state_id = #{stateId}")
     int deleteDone(int stateId);
 
@@ -300,4 +303,51 @@ public interface RecordMapper {
 
     @Delete("DELETE FROM tb_r_state WHERE r_state_id = #{stateId}")
     int deleteState(int stateId);
+
+
+
+    // --- done 업데이트 ---
+    @Update("UPDATE tb_r_done SET r_done_comment = #{comment} WHERE r_done_id = #{recordId}")
+    void updateDoneComment(@Param("recordId") int recordId, @Param("comment") String comment);
+
+    @Update("UPDATE tb_r_done SET r_done_start_date = #{startDate}, r_done_end_date = #{endDate} WHERE r_done_id = #{recordId}")
+    void updateDoneDate(@Param("recordId") int recordId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Update("UPDATE tb_r_done SET r_done_rating = #{rating} WHERE r_done_id = #{recordId}")
+    void updateDoneRating(@Param("recordId") int recordId, @Param("rating") double rating);
+
+
+    // --- doing 업데이트 ---
+    @Update("UPDATE tb_r_doing SET r_doing_progress = #{progress} WHERE r_doing_id = #{recordId}")
+    void updateDoingProgress(@Param("recordId") int recordId, @Param("progress") int progress);
+
+    @Update("UPDATE tb_r_doing SET r_doing_start_date = #{startDate} WHERE r_doing_id = #{recordId}")
+    void updateDoingStartDate(@Param("recordId") int recordId, @Param("startDate") LocalDate startDate);
+
+
+    // --- wish 업데이트 ---
+    @Update("UPDATE tb_r_wish SET r_wish_comment = #{comment} WHERE r_wish_id = #{recordId}")
+    void updateWishComment(@Param("recordId") int recordId, @Param("comment") String comment);
+
+    @Update("UPDATE tb_r_wish SET r_wish_start_date = #{startDate} WHERE r_wish_id = #{recordId}")
+    void updateWishStartDate(@Param("recordId") int recordId, @Param("startDate") LocalDate startDate);
+
+    @Update("UPDATE tb_r_wish SET r_wish_rating = #{rating} WHERE r_wish_id = #{recordId}")
+    void updateWishRating(@Param("recordId") int recordId, @Param("rating") double rating);
+
+
+    // --- stop 업데이트 ---
+    @Update("UPDATE tb_r_stop SET r_stop_progress = #{progress} WHERE r_stop_id = #{recordId}")
+    void updateStopProgress(@Param("recordId") int recordId, @Param("progress") int progress);
+
+    @Update("UPDATE tb_r_stop SET r_stop_comment = #{comment} WHERE r_stop_id = #{recordId}")
+    void updateStopComment(@Param("recordId") int recordId, @Param("comment") String comment);
+
+    @Update("UPDATE tb_r_stop SET r_stop_start_date = #{startDate}, r_stop_end_date = #{endDate} WHERE r_stop_id = #{recordId}")
+    void updateStopStartDate(@Param("recordId") int recordId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Update("UPDATE tb_r_stop SET r_stop_rating = #{rating} WHERE r_stop_id = #{recordId}")
+    void updateStopRating(@Param("recordId") int recordId, @Param("rating") double rating);
+
+
 }

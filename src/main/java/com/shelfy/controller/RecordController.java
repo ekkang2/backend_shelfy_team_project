@@ -81,6 +81,7 @@ public class RecordController {
     /**
      * 250324 박연화
      * 기록 삭제
+     *
      * @param stateId
      * @return
      */
@@ -89,24 +90,28 @@ public class RecordController {
         try {
             ResponseDTO result = recordService.deleteRecord(stateId);
             return ResponseEntity.ok().body(result);
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
         }
     }
 
     /**
      * 250305 박연화
-     * stateId, 업데이트할 데이터의 타입( 1: progress / 2: comment / 3: startDate, endDate / 4: rating )
-     * @param stateId
+     * recordId, recordType (1: done, 2: doing, 3: wish, 4: stop)
+     * 업데이트할 데이터의 타입( 1: progress / 2: comment / 3: startDate, endDate / 4: rating )
+     *
+     * @param recordId
      * @param type
      * @return
      */
-    @PutMapping("/record/{stateId}")
-    public ResponseEntity<?> updateRecord(@PathVariable int stateId,@RequestParam int type, @RequestBody UpdateRecordDTO dto) {
+    @PutMapping("/record/{recordType}/{recordId}")
+    public ResponseEntity<?> updateRecord(
+            @PathVariable int recordType, @PathVariable int recordId, @RequestParam int type, @RequestBody UpdateRecordDTO dto) {
+
         try {
-ResponseDTO response = recordService.updateRecordByType(stateId, type, dto);
-        return ResponseEntity.ok().body(response);
-        }catch (Exception e) {
+            ResponseDTO response = recordService.updateRecordByRecordType(recordType, recordId, type, dto);
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(ResponseDTO.fail(e.getMessage()));
         }
     }
