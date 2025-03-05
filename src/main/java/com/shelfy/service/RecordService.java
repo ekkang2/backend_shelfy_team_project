@@ -305,6 +305,11 @@ public class RecordService {
      * @return
      */
     public ResponseDTO updateRecordByRecordType(int recordType, int recordId, int type, UpdateRecordDTO dto) {
+        log.info("레코드타입 " + recordType);
+        log.info("레코드Id " + recordId);
+        log.info("type " + type);
+        log.info("dto " + dto);
+
         int result = 0;
         switch (recordType) {
             case 1:
@@ -322,6 +327,7 @@ public class RecordService {
             default:
                 throw new IllegalArgumentException("잘못된 독서기록 타입입니다.");
         }
+        log.info("레코드 속성 수정 성공 " + result);
         return ResponseDTO.success(result);
     }
 
